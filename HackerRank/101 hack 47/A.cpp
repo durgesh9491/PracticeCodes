@@ -23,7 +23,7 @@ using namespace std;
 #define lg(x)                     (63-__builtin_clzll(x))
 #define dig(x)                    (int(log10(double(x)))+1)
 #define T()                       int _;cin>>_;while(_--)
-#define gc                        getchar_unlocked
+#define gc                        getchar//_unlocked
 
 //traces
 #define dg1(x)                cerr<<__FUNCTION__<<" : "<<__LINE__<<" : "#x" = "<<x<<endl;
@@ -53,101 +53,24 @@ inline bool cmpUB(const int &v,const PII &p1){return (p1.first>v)?1:0;}
 inline bool cmpLB(const PII &p1, const int &v){return (p1.first<v)?1:0;}
 inline bool cmp(const PII &X,const PII &Y) {return (X.ff!=Y.ff)?(X.ff<Y.ff):(X.ss<Y.ss);}
 
+const LL MOD = 1e9 + 7;
+const LL M = 1e5 + 7;
 
-const int L = 50003;
-const int K = 26;
-
-struct state {
-	int length, link, next[K];
-};
-
-struct Tree{
-	int sz, last;
-	bool flag;
-	struct state *st;
-}tree[L];
-
-vector<string> v;
-
-
-void init(const int& p,const int& i) {
-	tree[i].st = new state[2*p + 1];
-	tree[i].sz = 0, tree[i].last = 0;
-	tree[i].st[0].link = -1;
-	tree[i].flag = true;
-	memset(tree[i].st[0].next, -1, sizeof tree[i].st[0].next);
-	tree[i].sz += 1;
-}
-
-void extend(const int& c, const int &idx) {
-	int nlast = tree[idx].sz, p, q, clone;
-	tree[idx].sz += 1;
-	tree[idx].st[nlast].length = (tree[idx].st[tree[idx].last].length) + 1;
-	memset(tree[idx].st[nlast].next, -1, sizeof tree[idx].st[nlast].next);
-	for(p=tree[idx].last; p!=-1 && tree[idx].st[p].next[c]==-1; p=tree[idx].st[p].link) tree[idx].st[p].next[c] = nlast;
-	if(p == -1) tree[idx].st[nlast].link = 0;
-	else{
-		q = tree[idx].st[p].next[c];
-		if(tree[idx].st[p].length + 1 == tree[idx].st[q].length) tree[idx].st[nlast].link = q;
-		else{
-			clone = tree[idx].sz;
-			tree[idx].sz += 1;
-			tree[idx].st[clone].length = tree[idx].st[p].length + 1;
-			memcpy(tree[idx].st[clone].next, tree[idx].st[q].next, sizeof tree[idx].st[clone].next);
-			tree[idx].st[clone].link = tree[idx].st[q].link;
-			for(; p!=-1 && tree[idx].st[p].next[(int)c]==q; p=tree[idx].st[p].link) tree[idx].st[p].next[c] = clone;
-			tree[idx].st[q].link = tree[idx].st[nlast].link = clone;
-		}
-	}
-	tree[idx].last = nlast;
-}
-
-void preCompute(string &a,const int& idx){
-	init(len(a), idx);
-	rep(i,0,len(a)-1) extend (a[i]-'a', idx);
-}
-
-int lcs(const int& a, const int& b) {
-	int p, l, best;
-	p = 0, l = 0, best = 0;
-	if(tree[a].flag == false){
-		preCompute(v[a], a);
-	}
-	if(tree[b].flag == false){
-		preCompute(v[b], b);
-	}
-	int idx = a;
-	rep(i,0,len(v[b])-1) {
-		if(tree[idx].st[p].next[v[b][i]-'a'] == -1) {
-			for(; p!=-1 && tree[idx].st[p].next[v[b][i]-'a'] == -1; p=tree[idx].st[p].link);
-			if (p == -1) {
-				p = l = 0;
-				continue;
-			}
-			l = tree[idx].st[p].length;
-		}
-		p = tree[idx].st[p].next[v[b][i]-'a']; l++;
-		if(l > best) best = l;
-	}
-	return best;
-}
-
+int A[M];
 int main(){
-	//ios_base::sync_with_stdio(false);
+	ios_base::sync_with_stdio(false);
 	//freopen("inp.txt","r",stdin);
 	//freopen("out.txt","w",stdout);
-    int n, q, a, b;
-    inp(n), inp(q);
-    string s;
-    rep(i,0,n-1){
-		cin >> s;
-		v.pb(s);
+	int m, x, flag = 0;
+	cin>>m;
+	rep(i,1,m){
+		cin >> x;
+		if(A[x] > 0){
+			flag =1;
+		}
+		A[x]++;
 	}
-    while(q--){
-       inp(a), inp(b);
-        if(tree[a].flag)
-			printf("%d\n", lcs(a, b));
-		else printf("%d\n", lcs(b, a));
-	}    
-    return 0;
+	if(flag) cout <<"NO";
+	else cout <<"YES";
+	return 0;
 }

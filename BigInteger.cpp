@@ -319,7 +319,6 @@ struct BigInt
         res.trim();
         return res;
     }
-    
     int sumDig(){
 	    int s=0,temp;
 		for(int i=0;i<sz(a);++i){
@@ -331,20 +330,51 @@ struct BigInt
 		}
 		return s;
 	}
+	BigInt Pow(LL x, LL y){
+		BigInt ans(1), xx(x);
+		while(y > 0){
+			if(y & 1){
+				ans *= xx;
+			}
+			xx *= xx;
+			y >>= 1;
+		}
+		return ans;
+	}
+	string numToString(int num){
+		string ret;
+		while(num > 0){
+			ret += char('0' + num%10);
+			num /= 10;
+		}
+		reverse(ret.begin(), ret.end());
+		return ret;
+	}
+	string convertToString(const BigInt& v){
+		string res = "";
+        if(v.sign==-1) res += '-';
+		if(v.a.empty()) return res;
+		res += numToString(v.a.back());
+        for(register int i=sz(v.a)-2;i>=0;--i){
+			if(v.a[i] == 0){
+				res += "000000000";
+			}
+			else res += numToString(v.a[i]);
+		}
+        return res;
+	}
 };
 
 int main(){
 	ios_base::sync_with_stdio(false);
 	//freopen("inp.txt","r",stdin);
 	//freopen("out.txt","w",stdout);
-	BigInt a,b,ans(1);
-	while(1){
-		cin>>a>>b;
-		for(BigInt i=0;i<b;i = i+1){
-			ans *= a;
-		}
-		cout<<ans<<endl;
-	}
+    BigInt Obj;
+	T(){
+		LL A, B;
+		cin >> A >> B;
+		cout << Obj.convertToString(Obj.Pow(A, B)) <<endl;
+	} 
 	return 0;
 }
 
