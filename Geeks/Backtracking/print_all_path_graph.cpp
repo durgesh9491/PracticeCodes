@@ -28,7 +28,7 @@ void printDFS(int &s, int &d, VI &visit, VI &path, vector<VI> &ans){
 			visit[G[s][i]] = true;
 			printDFS(G[s][i], d, visit, path, ans);	
 			
-			backtrack
+			//backtrack
 			path.pop_back();
 			visit[G[s][i]] = false;	
 		}
@@ -56,14 +56,6 @@ int main(){
 		path.pb(s);
 		visit[s] = true;
 		printDFS(s, d, visit, path, ans);
-		
-		/*
-		for(int i = 0; i < sz(ans); i++){
-			for(int j = 0; j < sz(ans[i]); j++){
-				cout << ans[i][j] << " ";
-			}
-			cout << endl;
-		} */
 		cout << sz(ans) << endl;
 	} 
 }
