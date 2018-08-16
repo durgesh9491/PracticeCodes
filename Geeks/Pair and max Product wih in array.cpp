@@ -1,6 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+/*
+ * Complexity: O(n * sqrt(A) * log(n))
+ */ 
 
 int search(vector<int> &v, int ele, int idx){
 	int res = -1;
