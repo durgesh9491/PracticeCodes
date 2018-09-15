@@ -10,7 +10,7 @@ using namespace std;
 int partition(vector<int> &v, int st, int end){
 	int p_idx = st;
 	int pivot = v[end];
-	for(int i = st; i < end; i++){s
+	for(int i = st; i < end; i++){
 		if(v[i] < pivot){
 			swap(v[p_idx++], v[i]);
 		}
