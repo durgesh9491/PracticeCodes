@@ -341,8 +341,57 @@ vector<vector<int> > getSumPaths(Node* root, int target) {
 }
 
 
+bool leaf(Node *node){
+    if(node == NULL) return 0;
+    if(node->left == NULL && node->right == NULL) return 1;
+    return 0;
+}
+
+bool isSumTree(Node* node){
+    if(node == NULL || leaf(node)) return 1;
+    
+    if(isSumTree(node->left) && isSumTree(node->right)){
+        int ls, rs;
+        if(node->left == NULL)
+            ls = 0;
+        else if(leaf(node->left))
+            ls = node->left->data;
+        else
+            ls = 2 * node->left->data;
+        
+        if(node->right == NULL)
+            rs = 0;
+        else if(leaf(node->right))
+            rs = node->right->data;
+        else
+            rs = 2 * node->right->data;
+        
+        return (node->data == ls + rs);
+    }
+    return 0;
+}
+
+
+bool isBalanced(Node *node, int &h){
+    if(node == NULL){
+        h = 1;
+        return true;
+    }
+    int lh = 0, rh = 0;
+    bool l = isBalanced(node->left, lh);
+    bool r = isBalanced(node->right, rh);
+    
+    h = (lh > rh ? lh : rh) + 1;
+    
+    if(abs(lh -rh) > 1){
+        return false;
+    }
+    return l & r;
+}
+
+
 int main(){
-	//Node *root = newNode(20);
+    //Node *root = newNode(20);
     //root->left = newNode(8);
     //root->right = newNode(22);
     //root->left->left = newNode(5);
