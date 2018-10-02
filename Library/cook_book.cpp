@@ -1,30 +1,25 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-typedef             long long int        LL;
-typedef             pair<int,int>        PII;
-typedef             vector<PII>          VPII;
-typedef             vector<int>          VI;
-typedef             vector<VI>           VVI;
-typedef             vector<string>       VS;
-typedef             priority_queue<int>  PQ;
 
-const int R  = 1e8 + 7;
-const int M  = 1e4 + 7;
-const LL MOD = 1e9 + 7;
+#define  LL    long long int
 
+/*
+ * Fast Input
+ * Accepts positive and negative integers
+ */
 template<typename T>
 void inp(T &x){
-	register T c = gc();
+	register T c = getchar_unlocked();
 	x = 0;
 	bool neg = 0;
 	for(;((c < '0' || c > '9') && c != '-');
-	c = gc());
+	c = getchar_unlocked());
 	if(c == '-'){
 		neg = 1;
-		c = gc();
+		c = getchar_unlocked();
 	}
-	for(;c >= '0' && c <= '9'; c = gc()){
+	for(;c >= '0' && c <= '9'; c = getchar_unlocked()){
 		x = (x * 10) + (c - '0');
 	}
 	if(neg){
@@ -33,22 +28,56 @@ void inp(T &x){
 }
 
 
-inline LL modexp(LL a, LL b, const LL &MOD){
+/*
+ * GCD and LCM
+ * Complexity: O(Log(max(A,B)))
+ */
+LL gcd(LL a,LL b) {
+    if(b == 0) return a;
+    return gcd(b, a % b);
+}
+
+LL lcm(LL a,LL b){
+	if(a == 0 || b == 0) return 0;
+	if(a > b) swap(a, b);
+	return (a / gcd(a, b)) * b;
+}
+
+
+/*
+ * Fast Exponentiation for positive powers of base
+ * Complexity: O(Log(b)) for (a ^ b) % MOD
+ */
+inline LL modexp(LL a, LL b, const LL &mod){
+	if(b < 0) return 0;
+	
 	LL x = 1;
+	a %= mod;
+	
 	while(b > 0){
 		if(b & 1){
-			x = (x * a) % MOD;
+			x = (x * a) % mod;
 		}
 		b >>= 1;
-		a  = (a * a) % MOD;
+		a  = (a * a) % mod;
 	}
+	
 	return x;
 }
 
 
+/*
+ * Fast Multiplication
+ * Complexity: O(Log(b)) for (a * b) % MOD
+ */
 inline LL mulmod(LL a,LL b,const LL &mod){
+	static const LL &INF = 1LL << 62;
+	if(abs(a) < INF / abs(b)) return (a * b) % mod;
+	
 	LL x = 0;
 	a %= mod;
+	b %= mod;
+	
 	while(b > 0){
 		if(b & 1){
 			x += a;
@@ -62,81 +91,219 @@ inline LL mulmod(LL a,LL b,const LL &mod){
 			a -= mod;
 		}
 	}
+	
 	return x;
 }
 
 
+/*
+ * Modular Multiplicative Inverse using Extended Euclidean Algorithm 
+ * gcd(a,b) = 1 and b not need to be a prime Number
+ * Complexity: O(Log(max(A,B)))
+ */
+LL extended_euclid(LL a, LL b) {
+	if(gcd(a, b) != 1) return 0;
+	
+    LL x = 1, y = 0, t = b;
+    LL xLast = 0, yLast = 1;
+    LL q, r, m, n;
+    
+    while(a != 0) {
+        q = b / a;
+        r = b % a;
+        m = xLast - q * x;
+        n = yLast - q * y;
+        xLast = x, yLast = y;
+        x = m, y = n;
+        b = a, a = r;
+    }
+    while(xLast < 0) xLast += t;
+    
+    return xLast;
+}
+
+
+/*
+ * Lookup table
+ * Inverse[A] % MOD where MOD need to be relatively prime with A
+ */
+inline vector<LL> InverseMod(){
+	static const LL &mod = 1e9 + 7;
+	static const int &R  = 1e7 + 7;
+	vector<LL> inverse(R);
+	
+	inverse[1] = 1;
+	for(int i = 2; i < R; i++){
+		inverse[i] = (- mod / i + mod) * inverse[mod % i];
+		if(inverse[i] >= mod) inverse[i] %= mod;
+	}
+	
+	return inverse;
+}
+
+
+
+/*
+ * nCr lookup table
+ * Complexity: O(M * M)
+ */
 inline vector<vector<int> > combination(){
-	vector<vector<int> > dp(M + 1, VI(M + 1, 0));
+	static const LL &mod = 1e9 + 7;
+	static const int &M  = 1e4 + 7;
+	vector<vector<int> > dp(M + 1, vector<int>(M + 1, 0));
+	
 	dp[0][0] = 1;
 	for(register int i = 1; i < M; i++){
-		for(register int j = 0; j <= i/2; j++){
+		for(register int j = 0; 2 * j <= i; j++){
 			if(j == 0){
 				dp[i][j] = dp[i][i] = 1;
 			}
 			else{
 				dp[i][j] = dp[i][i-j] = (dp[i-1][j] + dp[i-1][j-1]);
-				if(dp[i][j] >= MOD){
-					dp[i][j] -= MOD;
-					dp[i][i-j] -= MOD;
+				if(dp[i][j] >= mod){
+					dp[i][j] -= mod;
+					dp[i][i-j] = dp[i][j];
 				}
 			}
 		}
 	}
-  return dp;
+	
+	return dp;
 }
 
 
+/*
+ * nCr calculation
+ * Complexity: O(min(N, N-R))
+ */
 inline LL combination(const LL &N, LL R){
-	if(R > N) return 0;
+	if(R > N || R <= 0 || N <= 0) return 0;
+	
+	const LL &mod = 1e9 + 7;
 	R > (N - R) ? (R = N - R) : R;
 	LL mul = 1;
+	
 	for(LL i = 0; i < R; i++){
-		mul = ((mul * (N - i)) % MOD) * modexp(i + 1, MOD - 2, MOD);
-		if(mul >= MOD){
-			mul %= MOD;
+		mul = ((mul * (N - i)) % mod) * modexp(i + 1, mod - 2, mod);
+		if(mul >= mod){
+			mul %= mod;
 		}
 	}
+	
 	return mul;
 }
 
 
-inline LL Lucas(LL n,LL r){
+/*
+ * Find nCr % p for huge values of n and r <= 10^9
+ * Complexity:  O(p2 * Logp (n))
+ */
+inline LL Lucas(LL n, LL r, const LL &mod){
+	if(n < 0 || r < 0) return 0;
 	if(n == 0 && r == 0) return 1;
-	LL x = n % MOD;
-	LL y = r % MOD;
+	LL x = n % mod;
+	LL y = r % mod;
 	if(y > x) return 0;
-	return Lucas(n / MOD, r / MOD) * combination(x, y);
+	return Lucas(n / mod, r / mod, mod) * combination(x, y);
 }
 
 
-vector<LL> catalan(M, 0);
-inline void genCat(){
+/*
+ * Lookup table
+ * Catalan numbers: 2nCn / (n + 1)
+ * Complexity: O(M * M)
+ * Applications : Arrangement of parantheses, No of Binary Trees etc.
+ */
+inline vector<LL> genCat(){
+	static const int &M  = 1e4 + 7;
+	static const LL &mod = 1e9 + 7;
+	vector<LL> catalan(M, 0);
+	
 	catalan[0] = catalan[1] = 1;
 	for(register int i = 2; i < M; i++){
 		for(register int j = 0; j < i; j++){
-			catalan[i] += (catalan[j] * catalan[i - j - 1]) % MOD;
-			if(catalan[i] >= MOD){
-				catalan[i] -= MOD;
+			catalan[i] += (catalan[j] * catalan[i - j - 1]) % mod;
+			if(catalan[i] >= mod){
+				catalan[i] -= mod;
 			}
 		}
 	}
+	
+	return catalan;
 }
 
 
-vector<LL> fact(R);
-inline void factorial(){
-	for(int i = 1; i < R; i++){
+/*
+ * Factorial of a number % mod
+ * Complexity: O(R)
+ */
+inline vector<LL> factorial(){
+	static const LL &R = 1e8 + 7;
+	static const LL &mod = 1e9 + 7;
+	vector<LL> fact(R);
+	
+	fact[0] = 1;
+	for(register int i = 1; i < R; i++){
 		fact[i] = fact[i - 1] * i;
-		if(fact[i] >= MOD){
-			fact[i] %= MOD;
+		if(fact[i] >= mod){
+			fact[i] %= mod;
 		}
 	}
+	
+	return fact;
 }
 
 
+/*
+ * Factorial of a number N <= 1000
+ * Complexity: O(d ^ 2), where 'd': Number of digits in 'N'
+ */
+inline string fact(LL n){
+	static const int &M  = 1e4 + 7;
+	vector<int> F(M);
+	int k = 0,c = 0;
+	
+	F[0] = 1;
+	for(register int i = 1; i <= n; i++){
+		for(register int j = 0; j <= k; j++){
+			F[j] = F[j] * i + c;
+			c = F[j] / 10;
+			F[j] %= 10;
+		}
+		while(c > 0){
+			++k;
+			F[k] = c % 10;
+			c /= 10;
+		}
+	}
+	string ans = "";
+	for(register int i = k; i >= 0; i--){
+		ans += (F[i] + '0');
+	}
+	
+	return ans;
+}
+
+
+/*
+ * Striling's approximation
+ * Length of a factorial Number N
+ */
+inline int fact_length(const double &x){
+	double ans;
+	static const double &PI = acos(-1.0);
+	if(x < 3.0) ans = 1.0;
+	else ans = floor((x * log(x) - x + (log(2.0 * PI * x)) / 2.0 ) / log(10.0)) + 1.0;
+	return int(ans + 1e-12);
+}
+
+
+/*
+ * Check if given number is prime
+ * Complexity; O(sqrt(N))
+ */
 inline bool isPrime(const LL &x){
-	if( x<= 3) return(x <= 1 ? 0 : 1);
+	if(x<= 3) return(x <= 1 ? 0 : 1);
 	if(!(x & 1) || !(x % 3)) return 0;
 	for(LL i = 5; i * i <= x; i += 6){
 		if(!(x % i) || !(x % (i + 2))){
@@ -147,12 +314,45 @@ inline bool isPrime(const LL &x){
 }
 
 
-bool isprime[R];
-vector<int> prime;
-inline void sieve(){
+/*
+ * Miller_rabbin Primality Testing
+ * Complexity: O(log(N) ^ 3)
+ */
+inline bool miller(LL p){
+	if(p == 2) return true;
+	if((p & 1) == 0 || p <= 1) return false;
+	
+	static const int &IT = 5;
+	LL s = p - 1, temp, res, a;
+	
+	while(s % 2 == 0) s >>= 1;
+	for(register int it = 0; it < IT; ++it){
+		a=(rand() % (p - 1)) + 1;
+		temp = s;
+		res = modexp(a, temp, p);
+		while(temp != p-1 && res != 1 && res != p-1){
+			res = mulmod(res, res, p);
+			temp <<= 1;
+		}
+		if(res != p-1 && ((temp & 1) == 0))
+		return false;
+	}
+	
+	return true;
+}
+
+
+/*
+ * Lookup table for prime numbers
+ * Complexity: O(R * Log Log (R))
+ */ 
+inline vector<int> sieve(){
+	static const int &R  = 1e8 + 7;
+	vector<bool> isprime(R, false);
+	vector<int> prime;
+	
 	for(register int i = 2; i * i <= R; ++i){
 		if(!isprime[i]){
-			prime.push_back(i);
 			for(register int j = i << 1; j < R; j += i){
 				if(!isprime[j]){
 					isprime[j] = 1;
@@ -160,24 +360,268 @@ inline void sieve(){
 			}
 		}
 	}
+	prime.push_back(2);
+	for(register int i = 3; i < R; i += 2){
+		if(!isprime[i]){
+			prime.push_back(i);
+		}
+	}
+	
+	return prime;
 }
 
 
-int ETF[R];
-inline void ETF_sieve(){
+/*
+ * Segmented Sieve Range Marking, Applicable for N <= 10^14 and R - L <= 10^7
+ * Complexity: O(R * Log Log (R)) 
+ */
+inline vector<LL> segmented_sieve(LL n, LL m){
+	static const LL &U = 1e14 + 7;
+	static const int &R  = 1e8 + 7;
+	vector<LL> big_primes;
+	
+	if(n > U || m > U || n < 0 || m < 0 || m - n >= R) return big_primes;
+	if(n == 1) n += 1;
+	if(m == 1) m += 1;
+	
+	vector<bool> M(m - n + 1, false);
+	const vector<int> &prime = sieve();
+
+	for(register int i = 0; i < (int)prime.size() && 1LL * prime[i] * prime[i] <= m; ++i){
+		for(LL j = ((prime[i] + n - 1) / prime[i]) * prime[i]; j <= m; j += prime[i]){
+			if(j == prime[i]) continue;
+			if(!M[j - n]) M[j - n] = true;
+		}
+	}
+	for(register int i = 0; i <= m - n; i++)  if(!M[i]) big_primes.push_back(n + i);
+	
+	return big_primes;
+}
+
+
+/*
+ * Euler Phi
+ * Relative prime less than N
+ * Complexity: O(R * log log (R))
+ */
+inline vector<LL> ETF_sieve(){
+	static const int &R  = 1e8 + 7;
+	vector<LL> ETF(R, 0);
+	
 	for(register int i = 1; i < R; ++i){
 		ETF[i] = i;
 	}
 	for(register int i = 2; i < R; ++i){
 		if(ETF[i] == i){
 			ETF[i] = i - 1;
-			for(int j = i << 1; j < R; j += i){
+			for(register int j = i << 1; j < R; j += i){
 				ETF[j]=((i - 1) * ETF[j]) / i;
 			}
 		}
 	}
+	
+	return ETF;
 }
 
 
+/*
+ * Euler Phi
+ * Relative prime less than N
+ * Complexity: O(sqrt(N))
+ */
+inline LL phi(LL n){
+	if(n <= 0) return 0;
+    LL res = n, i;
+    
+    if(!(n & 1)){
+        res -= res >> 1;
+        while(!(n & 1))
+        n >>= 1;
+    }
+    for(i = 3; i * i <= n; i += 2){
+		if(n % i == 0){
+			res -= res / i;
+			while(n % i == 0) n /= i;
+		}
+	}
+    if(n > 1) res -= res / n;
+    
+    return res;
+}
+
+
+/*
+ * matrix Exponentiation
+ * Fibonacci number calculation
+ * Complexity: O(log(N))
+ */
+inline void multiply(LL F[2][2],LL M[2][2], const LL &mod){
+	LL x =  (F[0][0] * M[0][0] + F[0][1] * M[1][0]);
+	LL y =  (F[0][0] * M[0][1] + F[0][1] * M[1][1]);
+	LL z =  (F[1][0] * M[0][0] + F[1][1] * M[1][0]);
+	LL w =  (F[1][0] * M[0][1] + F[1][1] * M[1][1]);
+	
+	F[0][0] = (x >= mod) ? (x %= mod) : x;
+	F[0][1] = (y >= mod) ? (y %= mod) : y;
+	F[1][0] = (z >= mod) ? (z %= mod) : z;
+	F[1][1] = (w >= mod) ? (w %= mod) : w;
+}
+
+void matexp(LL F[2][2], int n, const LL &mod){
+	if(n <= 1) return;
+	LL M[2][2] = {{1, 1},{1, 0}};
+	matexp(F, n >> 1, mod);
+	multiply(F, F, mod);
+	if(n & 1) multiply(F, M, mod);
+}
+
+inline LL Fib(const LL &n, const LL &mod){
+	if(n <= 0) return n;
+	LL F[2][2] = {{1, 1}, {1, 0}};
+	matexp(F, n-1, mod);
+    return F[0][0];
+}
+
+
+/*
+ * Matrix Exponentiation
+ * Fibonacci number calculation
+ * Complexity: O(Log(N))
+ * Without using extra space
+ */
+inline LL Fib(LL n){
+	LL i, j, h, k, t;
+	i = h = 1;
+	j = k = 0;
+	while (n > 0){
+		if(n & 1){
+			t = j * h;
+			j = i * h + j * k + t;
+			i = i * k + t;
+		}
+		t = h * h;
+		h = 2 * k * h + t;
+		k = k * k + t;
+		n >>= 1;
+	} 
+	return j;
+}
+
+
+/*
+ * Check Whether a number is Fibonacci Number or Not
+ * Complexity: O(1)
+ */
+bool isFib(const LL &n){
+	if(n < 0) return false;
+	const LL &first = (5 * n * n + 4);
+	const LL &second = (5 * n * n - 4);
+	const LL &X = sqrt(first);
+	const LL &Y = sqrt(second);
+    return ((X * X == first) || (Y * Y == second));
+}
+
+
+/*
+ * Merge Sort
+ * Complexity: O(N * Log(N))
+ */
+inline bool sorted(const vector<int> &A){
+	for(register int i = 1; i < (int)A.size(); i += 1){
+		if(A[i] < A[i - 1]){
+			return false;
+		}
+	}
+	return true;
+}
+
+inline void merge(vector<int> &A, const int &low, const int &mid, const int &high){
+	register int i = low, j = 0, m = mid + 1;
+	static vector<int> temp((int)A.size());
+
+	while(i <= mid && m <= high){
+		if(A[i] <= A[m]){
+			temp[j++] = A[i++];
+		}
+		else{
+			temp[j++]=A[m++];
+		}
+	}
+	while(i <= mid) temp[j++] = A[i++];
+	while(m <= high)temp[j++] = A[m++];
+	for(i = 0; i < j; ++i){
+		A[i + low] = temp[i];
+	}
+}
+
+void sort_partition(vector<int> &A, const int &start, const int &end){
+	if(start < end){
+		int mid = (start + end) / 2;
+		sort_partition(A, start, mid);
+		sort_partition(A, mid + 1, end);
+		merge(A, start, mid, end);
+	}
+}
+
+void merge_sort(vector<int> &v){
+	if(sorted(v)) return;
+	reverse(v.begin(), v.end());
+	if(sorted(v)) return;
+	
+	sort_partition(v, 0, (int)v.size());
+}
+
+
+/*
+ * Interval Merging
+ * Complexity: O(N)
+ */
+bool cmp(const pair<int, int> &X,const pair<int, int> &Y){
+	return (X.first != Y.first) ? (X.first < Y.first) : (X.second < Y.second);
+}
+
+inline vector<pair<int, int> > merge(vector<pair<int, int> > v){
+	sort(v.begin(), v.end(), cmp); 
+	vector<pair<int, int> > ans;
+	int xx, yy, l = (int)v.size();
+	
+	for(register int i = 0; i < l; i++){
+		xx = v[i].first;
+		yy = v[i].second;
+		while(i < l-1 && (v[i].second >= v[i+1].first)){
+			i += 1;
+			yy = max(yy, v[i].second);
+		}
+	    ans.push_back(make_pair(xx, yy));
+    } 
+    
+    return ans;
+}
+
+
+/*
+ * String tokenizing
+ * Complexity: O(n)
+ */
+inline vector<string>  tokenize(const string &s, const string &keys){
+	vector<string> ans;
+	int l = (int)s.length();
+	string temp;
+	for(register int i = 0; i < l; ++i){
+		if(keys.find(s[i]) != std::string::npos)
+		continue;
+		temp="";
+		for(; i < l; ++i){
+			if(keys.find(s[i]) != std::string::npos)
+			break;
+			temp += s[i];
+		}
+		if(temp[0]!=' ') ans.push_back(temp);
+	}
+	
+	return ans;
+}
+
 int main(){
+	ios_base::sync_with_stdio(false);
 }
