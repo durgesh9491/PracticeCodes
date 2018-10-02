@@ -90,9 +90,9 @@ int main(){
 	int n, t;
 	string w;
 	cin >> t;
+	getline(cin, w);
 	while(t--){
 		cin >> n;
-		getline(cin, w);
 		getline(cin, w);
 		VS words = tokenize(w);
 		

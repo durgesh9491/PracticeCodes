@@ -27,7 +27,7 @@ using namespace std;
 #define gc                   getchar//_unlocked
 
 #define dist(x1,y1,x2,y2)        ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
-#define area(x1,y1,x2,y2,x3,y3)  (abs((x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2))/2.0))
+#define area(x1,y1,x2,y2,x3,y3)  (abs((x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2))))
 #define lg(x)                    63-__builtin_clzll(x)
 #define dig(x)                   (int(log10(double(x)))+1)
 #define cil(a,b)                 (LL(ceil(double(a)/double(b))))
@@ -69,14 +69,37 @@ inline bool cmp(const PII &X,const PII &Y) {return (X.ff!=Y.ff)?(X.ff<Y.ff):(X.s
 #define MOD                  1000000007
 #define MAX                  200007
 
+string s;
+int dp[100][100];
 
-int main()
-{
+int solve(int i,int j){
+	dbg2(i,j);
+	int &x = dp[i][j];
+	if(i==j){
+		return x=1;
+	}
+	if(x!=-1) return x;
+	if(s[i]==s[j] && i+1==j) return x=2;
+	if(s[i]==s[j]) return x=solve(i+1,j-1)+2;
+	else return x=max(solve(i+1,j),solve(i,j-1));
+}
+	
+
+int main(){
 	ios_base::sync_with_stdio(false);
 	//freopen("inp.txt","r",stdin);
 	//freopen("out.txt","w",stdout);
+	while(1){
+		memset(dp,-1,sizeof(dp));
+		cin>>s;
+		solve(0,len(s)-1);
+		rep(i,0,len(s)-1){
+			rep(j,0,len(s)-1){
+				//dbg3(i,j,dp[i][j]);
+			}
+			cout<<endl;
+		}
+		cout<<dp[0][len(s)-1]<<endl;
+	}
     return 0;
 }
-
-
-

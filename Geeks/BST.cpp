@@ -154,9 +154,7 @@ int LCA(Node *node, int n1, int n2){
 	if(node == NULL) return -1;
 	if(node->data > n1 && node->data > n2) return LCA(node->left, n1, n2);
 	if(node->data < n1 && node->data < n2) return LCA(node->right, n1, n2);
-	if(search(node->left, min(n1, n2)) && search(node->right, max(n1, n2)))
-		return node->data;
-	return -1;
+	return node->data;
 }
 
 void isPairPresent(Node *node, int target){
@@ -310,6 +308,11 @@ int main(){
 	insert(root, 4);
 	insert(root, 7);
 	insert(root, 16);
+	cout << LCA(root, 3, 1) << endl;
+	int pred = -1, suc = -1;
+	InorderSucPred(root, 7, pred, suc);
+	cout<<"\nPredecessor = "<<pred<<" "<<"\nSuccessor = "<<suc<<endl;
+
 	cout<<KthSmallest(root, 3)<<endl;
 	cout<<KthSmallest(root, 5)<<endl;
 	cout<<KthSmallest(root, 8)<<endl;
@@ -332,7 +335,7 @@ int main(){
 	insert(root, 12);	
 	inorder(root);
 	
-	int pred = -1, suc = -1;
+	pred = -1, suc = -1;
 	InorderSucPred(root, 7, pred, suc);
 	cout<<"\nPredecessor = "<<pred<<" "<<"\nSuccessor = "<<suc<<endl;
 	

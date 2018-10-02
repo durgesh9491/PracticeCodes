@@ -14,6 +14,12 @@ Node * newNode(const int &data){
 	return tmp;
 }
 
+bool leaf(Node *node){
+    if(node == NULL) return false;
+    if(node->left == NULL && node->right == NULL) return true;
+    return false;
+}
+
 int MaximumSumPath(Node *node, int &ans){
 	if(node == NULL) return 0;
 	int l = max(0, MaximumSumPath(node->left, ans));
@@ -28,8 +34,8 @@ int LeafToLeafSum(Node *node, int &ans){
 	int l = LeafToLeafSum(node->left, ans);
 	int r = LeafToLeafSum(node->right, ans);
 	ans = max(ans, l + r + node->data);
-	if(node -> left == NULL) return r + node->data;
-	if(node -> right == NULL) return l + node->data;
+	if(node->left == NULL) return r + node->data;
+	if(node->right == NULL) return l + node->data;
 	return max(l, r) + node->data;
 }
 
@@ -40,9 +46,9 @@ int height(Node *node){
 
 int minDepth(Node* node) {
     if(node == NULL) return 0;
-    if(node ->left == NULL && node->right == NULL) return 1;
-    if(!node->left) return minDepth(node->right) + 1;
-    if(!node->right) return minDepth(node->left) + 1;
+    if(leaf(node)) return 1;
+    if(node->left == NULL) return minDepth(node->right) + 1;
+    if(node->right == NULL) return minDepth(node->left) + 1;
     return min(minDepth(node->right), minDepth(node->left)) + 1;
 }
 
@@ -272,7 +278,7 @@ void distantNodes(Node *node, int K){
 	distantNodes(node->right, K-1);	
 }
 
-bool printAncestor(Node *node, int x){
+bool printAncestor(Node *node, const int &x){
 	if(node == NULL) return false;
 	if(node->data == x) return true;
 	if(printAncestor(node->left, x) || printAncestor(node->right, x)){
@@ -298,21 +304,21 @@ int diameterSlow(Node *node){
 /*
  * O(n) Method
  */
-int diameter(Node *node, int *height){
+int diameter(Node *node, int &height){
 	if(node == NULL){
-		*height = 0;
-		return *height;
+		height = 0;
+		return height;
 	}
 	int lh = 0, rh = 0, ld, rd;
-	ld = diameter(node->left, &lh);
-	rd = diameter(node->right, &rh);
-	*height = max(lh, rh) + 1;
+	ld = diameter(node->left, lh);
+	rd = diameter(node->right, rh);
+	height = max(lh, rh) + 1;
 	return max(lh + rh +1, max(ld, rd));
 }
 
-bool checkRootToLeafPathSum(Node *node, int sum, int target){
+bool checkRootToLeafPathSum(Node *node, int sum, const int &target){
     if(node == NULL) return false;
-    if(node->data + sum == target && node->left==NULL && node->right == NULL){
+    if(node->data + sum == target && leaf(node)){
         return true;
     }
     if(checkRootToLeafPathSum(node->left, node->data + sum, target) || checkRootToLeafPathSum(node->right, node->data + sum, target)) 
@@ -320,12 +326,13 @@ bool checkRootToLeafPathSum(Node *node, int sum, int target){
     return false;
 }
 
-void sumPaths(Node* node, int sum, int target,  vector<vector<int> >& ans, vector<int> &cur){
+void sumPaths(Node* node, int sum, const int &target,  vector<vector<int> >& ans, vector<int> &cur){
     if(node == NULL) return;
-    if(node->data + sum == target && node ->left == NULL && node->right == NULL){
+    if(node->data + sum == target && leaf(node)){
         cur.push_back(node->data);
         ans.push_back(cur);
         cur.pop_back();
+        return;
     }
     cur.push_back(node->data);
     sumPaths(node->left, node->data + sum, target, ans, cur);
@@ -333,18 +340,11 @@ void sumPaths(Node* node, int sum, int target,  vector<vector<int> >& ans, vecto
     cur.pop_back();
 } 
 
-vector<vector<int> > getSumPaths(Node* root, int target) {
+vector<vector<int> > getSumPaths(Node* root, const int &target){
     vector<vector<int> > ans;
     vector<int> cur;
     sumPaths(root, 0, target, ans, cur);
     return ans; 
-}
-
-
-bool leaf(Node *node){
-    if(node == NULL) return 0;
-    if(node->left == NULL && node->right == NULL) return 1;
-    return 0;
 }
 
 bool isSumTree(Node* node){
@@ -368,7 +368,7 @@ bool isSumTree(Node* node){
         
         return (node->data == ls + rs);
     }
-    return 0;
+    return false;
 }
 
 
@@ -406,14 +406,24 @@ int main(){
     root->right       = newNode(-3);
     root->left->left  = newNode(9);
     root->left->right = newNode(-7);
-    root->left->right->left = newNode(5);
+    root->left->right->left = newNode(18);
     root->left->right->right = newNode(-3);
     root->right->right = newNode(1);
     root->right->left= newNode(-8);
-    root->right->right->left   = newNode(-6);
+    root->right->right->left   = newNode(21);
     root->right->right->right  = newNode(-1);
     root->left->left->right  = newNode(2);
     
+    
+    const vector<vector<int> > &v = getSumPaths(root, 21);
+    
+    for(int i = 0; i < int(v.size()); i++){
+		for(int j = 0; j < int(v[i].size()); j++){
+			cout << v[i][j] << " ";
+		}
+		cout << endl;
+	}
+	
     int ans = INT_MIN;
     MaximumSumPath(root, ans);
     cout<<"MaximumSumPath = "<<ans<<endl;
@@ -450,7 +460,7 @@ int main(){
     printAncestor(root, x);
     
     int height = 0;
-    cout<<"\n\nDiameter = "<<diameter(root, &height)<<endl;
+    cout<<"\n\nDiameter = "<<diameter(root, height)<<endl;
     
 	return 0;
 }
