@@ -603,24 +603,301 @@ inline vector<pair<int, int> > merge(vector<pair<int, int> > v){
  * String tokenizing
  * Complexity: O(n)
  */
-inline vector<string>  tokenize(const string &s, const string &keys){
+inline vector<string> tokenize(const string &s, const string &keys){
 	vector<string> ans;
 	int l = (int)s.length();
 	string temp;
+	
 	for(register int i = 0; i < l; ++i){
 		if(keys.find(s[i]) != std::string::npos)
 		continue;
-		temp="";
+		temp = "";
 		for(; i < l; ++i){
 			if(keys.find(s[i]) != std::string::npos)
 			break;
 			temp += s[i];
 		}
-		if(temp[0]!=' ') ans.push_back(temp);
+		if(temp[0] != ' ') ans.push_back(temp);
 	}
 	
 	return ans;
 }
+
+
+/*
+ * Graph Traversal
+ * DFS
+ * Complexity: O(|V| + |E|)
+ * Parameters: 
+ * 1. Graph, 
+ * 2. State of the nodes
+ * 3. Starting point
+ * 4. Number of nodes in this subset of graph 
+ */
+
+void dfs(const vector<vector<int> > &G, vector<bool> &vis, const int &v, int &comp_cnt){
+	vis[v] = true;
+	comp_cnt += 1;
+	
+	for(register int i = 0; i < (int)G[v].size(); i++){
+		const int &adj = G[v][i];
+		if(vis[adj] == false){
+			dfs(G, vis, adj, comp_cnt);
+		}
+	}
+}
+
+
+/*
+ * BFS
+ * Complexity: O(|V| + |E|)
+ * 
+ * Parameters:
+ * 1. Graph
+ * 2. Number of nodes
+ * 3. Source vertex
+ * 
+ * Computes: 
+ * 1. Visit array
+ * 2. Distance vector from given source
+ * 3. Parent of each node
+ * 4. Level order traversal of graph
+ */
+void bfs(const vector<vector<int> > &G, const int &N, const int &v){
+	vector<bool> vis(N + 1, false);
+	vector<int> dist(N + 1, 0);
+	vector<int> par(N + 1, -1);
+	queue<int> Q;
+	
+	vis[v] = true;
+	dist[v] = 0;
+	par[v] = v;
+	Q.push(v);
+	
+	while(!Q.empty()){
+		int cur = Q.front();
+		Q.pop();
+		
+		for(register int i = 0; i < (int)G[cur].size(); i++){
+			const int &adj = G[cur][i];
+			if(vis[adj] == false){
+				vis[adj] = true;
+				dist[adj] = dist[cur] + 1;
+				par[adj] = cur;
+				Q.push(adj);
+			}
+		}
+	}
+}
+
+
+/*
+ * Dijkstra's Algorithm
+ * Complexity: O((|E| + |V|)log|v|)
+ * 
+ * Parameters:
+ * 1. Graph
+ * 2. Number of nodes
+ * 3. Source vertex
+ * 
+ * Computes:
+ * 1. Single source shortest path to all the nodes
+ * 2. Doesn't work for -ve weight cycle containing Graph
+ */
+inline void Dij(const vector<vector<pair<int, int> > > &G, const int &N, const int &s){
+	const int &INF = 1 << 30;
+	set<pair<int, int> > Q;
+	vector<int> dist(N + 1, INF);
+	 
+	dist[s] = 0;
+	Q.insert(make_pair(0, s));
+	
+	while(!Q.empty()){
+		const pair<int, int> &top = *Q.begin();
+		const int &v = top.second;
+		Q.erase(Q.begin());
+		for(register int i = 0; i < (int)G[v].size(); i++){
+			const int &adj = G[v][i].first;
+			const int &cost = G[v][i].second;
+			if (dist[adj] > dist[v] + cost){
+				if (dist[adj] != INF){
+					Q.erase(Q.find(make_pair(dist[adj], adj)));
+				}
+				dist[adj] = dist[v] + cost;
+				Q.insert(make_pair(dist[adj], adj));
+			}
+		}
+	}
+}
+
+
+/*
+ * Floyed Warshall Algorithm
+ * Complexity: O(N ^ 3)
+ * 
+ * Parameters:
+ * 1. Graph(1 based indexing, pair: first -> adj, second -> distance
+ * 2. Number of Nodes
+ * 
+ * Computes:
+ * 1. All pair shortest path
+ * 2. Detects cycle with some negative weighted edges
+ */
+vector<vector<int> > floyed(const vector<vector<pair<int, int> > > &G, const int &N){
+	
+	const int &INF = 1 << 30;
+	vector<vector<int> > dp(N + 1, vector<int>(N + 1, INF));
+	
+	for(register int i = 1; i <= N; i++){
+		for(register int j = 1; j <= N; j++){
+			dp[i][j] = G[i][j].second;
+		}
+		dp[i][i] = 0;
+	}
+	
+	for(register int i = 1; i <= N; i++){
+		for(register int j = 1; j <= N; j++){
+			for(register int k = 1; k <= N; k++){
+				dp[i][j] = min(dp[i][j], dp[i][k] + dp[k][j]);
+			}
+		}
+	}
+	
+	return dp;
+}
+
+
+
+/*
+ * Prim's Algorithm
+ * Similar to Dijkstra's Algorithm
+ * Complexity: O((|E| + |V|)log|v|)
+ * 
+ * Parameters:
+ * 1. Graph
+ * 2. Number of vertices
+ * 
+ * Computes:
+ * 1. Minimum cost spanning tree of the given graph
+ */
+inline int prim(const vector<vector<pair<int, int> > > &G, const int &N, const int &s){
+	const int &INF = 1 << 30;
+	set<pair<int, int> > Q;
+	vector<int> dist(N + 1, INF);
+	int ans = 0;
+	 
+	dist[s] = 0;
+	Q.insert(make_pair(0, s));
+	
+	while(!Q.empty()){
+		const pair<int, int> &top = *Q.begin();
+		const int &v = top.second;
+		Q.erase(Q.begin());
+		ans += top.first;
+		for(register int i = 0; i < (int)G[v].size(); i++){
+			const int &adj = G[v][i].first;
+			const int &cost = G[v][i].second;
+			if (dist[adj] > cost){
+				if (dist[adj] != INF){
+					Q.erase(Q.find(make_pair(dist[adj], adj)));
+				}
+				dist[adj] = cost;
+				Q.insert(make_pair(dist[adj], adj));
+			}
+		}
+	}
+	
+	return ans;
+}
+
+
+
+/*
+ * Kruskal's Algorithm
+ * Complexity: O(|E| * log|E|)
+ * Using the concept of Disjoint set union
+ * 
+ * Parameters:
+ * 1. Pair of edge cost and pair of vertices having that edge
+ * 2. Number of vertices
+ * 3. Number of edges
+ * 
+ * Computes:
+ * 1. Minimum cost spanning tree of the given graph 
+ */
+
+int root(int x, vector<int> &id){
+    while(id[x] != x){
+        id[x] = id[id[x]];
+        x = id[x];
+    }
+    return x;
+}
+
+void uniun(int x, int y, vector<int> &id){
+    id[root(x, id)] = id[root(y, id)];
+}
+
+int kruskal(pair <int, pair<int, int> > edges[], const int &N, const int &M){
+	if(N <= 0 || M <= 0) return 0; 
+	
+	vector<int> id(N + 1);
+	for(register int i = 0; i <= N; i++) id[i] = i;
+	int min_cost = 0;
+	
+	sort(edges, edges + N);
+    for(register int i = 0; i < M; ++i){
+        int x = edges[i].second.first;
+        int y = edges[i].second.second;
+        if(root(x, id) != root(y, id)){
+            min_cost += edges[i].first;
+            uniun(x, y, id);
+        }    
+    }
+    
+    return min_cost;
+}
+
+
+
+/* 
+ * Binary Indexed Tree
+ * Complexity: O(N *log(N))
+ * Note: i,j,b are 1 based indexed
+ * 
+ * Application:
+ * 1. Point query
+ * 2. Point update
+ * 3. Range update
+ */
+class BIT{
+    private:
+		LL *tree;
+		static const int M = 2e7 +  5;
+	
+	public:
+		BIT(int sz = M){
+			tree = new LL[sz];
+		}
+		
+		inline LL point_query(int b){
+			LL sum = 0;
+			for(; b; b -= (b & (-b))) sum += tree[b];
+			return sum;
+		}
+
+		inline void update(int k, const int &v, const int &N){
+			   for(; k <= N; k += (k & (-k)))
+			   tree[k] += v;
+		}
+
+		inline void range_update(const int& i,const int& j,const int& v, const int &N){
+			update(i, v, N);
+			update(j + 1, -v, N);
+		}
+};
+
+
 
 int main(){
 	ios_base::sync_with_stdio(false);

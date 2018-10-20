@@ -313,7 +313,7 @@ int diameter(Node *node, int &height){
 	ld = diameter(node->left, lh);
 	rd = diameter(node->right, rh);
 	height = max(lh, rh) + 1;
-	return max(lh + rh +1, max(ld, rd));
+	return max(lh + rh + 1, max(ld, rd));
 }
 
 bool checkRootToLeafPathSum(Node *node, int sum, const int &target){
@@ -381,9 +381,9 @@ bool isBalanced(Node *node, int &h){
     bool l = isBalanced(node->left, lh);
     bool r = isBalanced(node->right, rh);
     
-    h = (lh > rh ? lh : rh) + 1;
+    h = max(lh, rh) + 1;
     
-    if(abs(lh -rh) > 1){
+    if(abs(lh - rh) > 1){
         return false;
     }
     return l & r;

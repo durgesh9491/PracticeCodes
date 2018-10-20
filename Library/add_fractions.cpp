@@ -48,8 +48,8 @@ class Fraction{
 		
 		Fraction lowest(Fraction obj){
 			int gcf = gcd(obj.num, obj.den);
-			obj.num = obj.num/gcf;
-			obj.den = obj.den/gcf;
+			obj.num = obj.num / gcf;
+			obj.den = obj.den / gcf;
 			return obj;
 		}
 		
