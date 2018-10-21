@@ -12,19 +12,17 @@ template<typename T>
 void inp(T &x){
 	register T c = getchar_unlocked();
 	x = 0;
-	bool neg = 0;
+	bool neg = false;
 	for(;((c < '0' || c > '9') && c != '-');
 	c = getchar_unlocked());
 	if(c == '-'){
-		neg = 1;
+		neg = true;
 		c = getchar_unlocked();
 	}
 	for(;c >= '0' && c <= '9'; c = getchar_unlocked()){
 		x = (x * 10) + (c - '0');
 	}
-	if(neg){
-		x = -x;
-	}
+	x = neg ? -x : x;
 }
 
 
@@ -126,6 +124,7 @@ LL extended_euclid(LL a, LL b) {
 /*
  * Lookup table
  * Inverse[A] % MOD where MOD need to be relatively prime with A
+ * Proof: https://discuss.codechef.com/questions/1440/algorithm-to-find-inverse-modulo-m
  */
 inline vector<LL> InverseMod(){
 	static const LL &mod = 1e9 + 7;
@@ -134,8 +133,7 @@ inline vector<LL> InverseMod(){
 	
 	inverse[1] = 1;
 	for(int i = 2; i < R; i++){
-		inverse[i] = (- mod / i + mod) * inverse[mod % i];
-		if(inverse[i] >= mod) inverse[i] %= mod;
+		inverse[i] = mod + ((- mod / i) * inverse[mod % i]) % mod;
 	}
 	
 	return inverse;
@@ -601,7 +599,7 @@ inline vector<pair<int, int> > merge(vector<pair<int, int> > v){
 
 /*
  * String tokenizing
- * Complexity: O(n)
+ * Complexity: O(N)
  */
 inline vector<string> tokenize(const string &s, const string &keys){
 	vector<string> ans;
@@ -866,9 +864,9 @@ int kruskal(pair <int, pair<int, int> > edges[], const int &N, const int &M){
  * Note: i,j,b are 1 based indexed
  * 
  * Application:
- * 1. Point query
- * 2. Point update
- * 3. Range update
+ * 1. Point query: O(log N)
+ * 2. Point update: O(log N)
+ * 3. Range update: O(log N)
  */
 class BIT{
     private:

@@ -53,6 +53,12 @@ class MOD{
 			return x;
 		}
 		
+		/*
+		 * Suppose that (a/b) mod p = r. Then, a/b = mp+r, i.e., a=bmp+br.
+		 * Thus, a mod (bp) = br mod (bp). Since r<p, i.e., br<bp, we have a mod (bp) = br.\
+		 * Therefore, (a mod (bp))/b = br /b = r.
+		 * Provided b * p < INF
+		 */
 		LL div(LL &a, LL &b){
 			return (b < INF/mod) ? ((a % mul(b, mod)) / b) : mul(a, modexp(b, mod - 2));
 		}
