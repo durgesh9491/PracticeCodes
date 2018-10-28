@@ -179,9 +179,8 @@ class CRT{
 	public:
 		
 		LL combinations(const LL &a, const LL& b, const LL& mod){
-			assert(a > 0 && b > 0 && mod > 1 && mod < R && a >= b); 
-			if(a == 0) return 0;
-			
+			assert(a > 0 && b > 0 && mod > 1 && mod < R && a >= b);
+
 			factorizeMod(mod);
 			const int &n = (int)prime_rep.size();
 			vector<LL> x(n), y(n);
