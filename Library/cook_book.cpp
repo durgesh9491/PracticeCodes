@@ -9,7 +9,7 @@ using namespace std;
  * Accepts positive and negative integers
  */
 template<typename T>
-void inp(T &x){
+inline void inp(T &x){
 	register T c = getchar_unlocked();
 	x = 0;
 	bool neg = false;
@@ -95,6 +95,7 @@ inline LL mulmod(LL a,LL b,const LL &mod){
 
 
 /*
+ * Calculates inv(a) % b
  * Modular Multiplicative Inverse using Extended Euclidean Algorithm 
  * gcd(a,b) = 1 and b not need to be a prime Number
  * Complexity: O(Log(max(A,B)))
